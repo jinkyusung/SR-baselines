@@ -1,0 +1,12 @@
+wandb:
+  entity: jinkyusung-snu
+  project: SR-baselines
+  
+model:
+  num_layer: 5
+  emb_dim: 64
+
+trainer:
+  epochs: 2000
+  lr: 0.001
+  weight_decay: 0.0005
