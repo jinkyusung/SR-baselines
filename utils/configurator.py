@@ -71,5 +71,4 @@ def parse_argument() -> argparse.Namespace:
 def load_config() -> Dict[str, any]:
     _args = parse_argument()
     config = parse_config(dataset=_args.dataset, model=_args.model)
-    vars(config).update(vars(_args))
     return config
