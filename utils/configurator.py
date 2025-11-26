@@ -1,7 +1,7 @@
 import argparse
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Dict
 import yaml
 
 
@@ -23,26 +23,17 @@ def parse_config(dataset: str, model: str) -> argparse.Namespace:
     Raises:
         FileNotFoundError: If the configuration file does not exist at the expected path.
     """
-    # Construct the absolute path to the configuration file
-    # Structure: ../config/{model}/{dataset}.yaml
     config_path = Path(__file__).resolve().parent.parent / 'config' / model / f'{dataset}.yaml'
 
     if config_path.exists():
         with open(config_path, 'r') as f:
             config_dict = yaml.safe_load(f)
-        
-        # Handle case where yaml file is empty
-        if config_dict is None:
-            config_dict = {}
 
-        # Simpler method: Use json dump/load with object_hook to convert all nested dicts to Namespaces
-        # This replaces the need for a custom recursive function.
         return json.loads(
             json.dumps(config_dict), 
             object_hook=lambda d: argparse.Namespace(**d)
         )
     else:
-        # Raise an error with the specific path if the file is missing
         raise FileNotFoundError(f"Configuration file not found at: {config_path}")
 
 
