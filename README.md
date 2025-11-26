@@ -7,5 +7,5 @@ Sequential recommendation baselines for VIPLab research projects.
 - GRU-ODE or GNG-ODE (CIKM 22)  
 - DGEL (SIGIR 23)
 - E-NSDE (NeurIPS 24)
-- FlowRec (IJCAI 25)
+- FMRec (IJCAI 25)
 - TGODE (KDD 25)  
