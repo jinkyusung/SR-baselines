@@ -1,5 +1,6 @@
 import os
 import torch
+from pathlib import Path
 from typing import List, Tuple, Dict
 
 
@@ -221,6 +222,60 @@ class TemporalDataset:
         after k-core filtering and remapping.
         """
         return (self.num_users, self.num_items)
+    
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the dataset statistics.
+        Calculates user, item, and interaction counts, density, 
+        and sequence length statistics (min, max, mean, variance).
+        """
+        if self.num_users == 0 or self.num_items == 0:
+            return "Dataset is empty or not loaded."
+
+        # 1. Basic Counts
+        n_users = self.num_users
+        n_items = self.num_items
+        n_interactions = self.data.shape[0]
+        dataset_name = os.path.basename(self.path)
+
+        # 2. Sequence Length Statistics
+        # We use bincount on user IDs to get the number of interactions per user.
+        # Since IDs are remapped to [0, n_users-1], this is efficient.
+        user_ids = self.data[:, 0].long()
+        user_degrees = torch.bincount(user_ids, minlength=n_users).float()
+
+        min_seq = user_degrees.min().item()
+        max_seq = user_degrees.max().item()
+        mean_seq = user_degrees.mean().item()
+        var_seq = user_degrees.var().item()  # Unbiased sample variance
+
+        # 3. Density Calculation
+        # Density = Interactions / (Users * Items)
+        matrix_size = n_users * n_items
+        density = n_interactions / matrix_size if matrix_size > 0 else 0.0
+
+        # 4. Formatted Output
+        header = "=" * 50
+        divider = "-" * 50
+        
+        stats_str = (
+            f"\n{header}\n"
+            f"Dataset Statistics: {dataset_name}\n"
+            f"{divider}\n"
+            f"{'Number of Users':<25} : {n_users}\n"
+            f"{'Number of Items':<25} : {n_items}\n"
+            f"{'Number of Interactions':<25} : {n_interactions}\n"
+            f"{'Density':<25} : {density:.5f} ({density*100:.3f}%)\n"
+            f"{divider}\n"
+            f"Sequence Length Statistics:\n"
+            f"  - Min Length            : {min_seq:.0f}\n"
+            f"  - Mean Length           : {mean_seq:.2f}\n"
+            f"  - Max Length            : {max_seq:.0f}\n"
+            f"  - Variance              : {var_seq:.2f}\n"
+            f"{header}\n"
+        )
+        
+        return stats_str
 
 
 # ----------------------------- Gowalla Dataset Loader ----------------------------- #
@@ -567,3 +622,52 @@ class TemporalAdjacencyMatrix:
         )
         return adj_matrix.coalesce()
     
+
+# ----------------------------- class matcher ----------------------------- #
+
+
+def load_data_object(dataset: str, k_core: int):
+
+    amazon_dataset = {
+        'amazon-books',
+        'amazon-beauty',
+        'amazon-toys',
+        'amazon-electronics'
+    }
+
+    movielens_dataset = {
+        'ml-1m', 'ml-100k'
+    }
+
+    steam_dataset = {
+        'steam'
+    }
+
+    gowalla_dataset = {
+        'gowalla'
+    }
+
+    tmall_dataset = {
+        'tmall-buy',
+        'tmall-click'
+    }
+
+    raw_file = Path(__file__).resolve().parent / 'dataset' / f'{dataset}.inter'
+
+    if dataset in amazon_dataset:
+        return Amazon(path=raw_file, k_core=k_core)
+
+    elif dataset in steam_dataset:
+        return Steam(path=raw_file, k_core=k_core)
+
+    elif dataset in movielens_dataset:
+        return MovieLens(path=raw_file, k_core=k_core)
+
+    elif dataset in gowalla_dataset:
+        return Gowalla(path=raw_file, k_core=k_core)
+
+    elif dataset in tmall_dataset:
+        return Tmall(path=raw_file, k_core=k_core)
+
+    else:
+        NotImplementedError(f"Dataset class for '{dataset}' is not explicited.")
