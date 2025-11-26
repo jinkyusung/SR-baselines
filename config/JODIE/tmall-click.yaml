@@ -4,8 +4,8 @@ wandb:
   run_id: None
 
 dataset:
-  name: amazon-beauty
-  k_core: 5
+  name: tmall-click
+  k_core: 10
   max_len: 50
   batch_size: 512
 
