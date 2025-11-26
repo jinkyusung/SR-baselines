@@ -1,6 +1,7 @@
 wandb:
   entity: jinkyusung-snu
   project: SR-baselines
+  run_id: None
   
 model:
   num_layer: 5
