@@ -223,7 +223,7 @@ class TemporalDataset:
         """
         return (self.num_users, self.num_items)
     
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """
         Returns a string representation of the dataset statistics.
         Calculates user, item, and interaction counts, density, 
